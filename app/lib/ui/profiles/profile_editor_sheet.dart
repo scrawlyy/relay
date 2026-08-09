@@ -47,7 +47,8 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
     _obscurePassword = true;
     _name = TextEditingController(text: profile?.name ?? '');
     _host = TextEditingController(text: profile?.host ?? '');
-    _port = TextEditingController(text: profile?.port != 0 ? '${profile!.port}' : '');
+    final port = profile?.port ?? 0;
+    _port = TextEditingController(text: port != 0 ? '$port' : '');
     _username = TextEditingController(text: profile?.username ?? '');
     _password = TextEditingController(text: profile?.password ?? '');
   }

@@ -12,7 +12,11 @@ import 'settings/settings_screen.dart';
 import 'shell/root_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(onboardedProvider, (_, __) => refresh.value++);
+  ref.listen(profilesProvider, (_, __) => refresh.value++);
   return GoRouter(
+    refreshListenable: refresh,
     initialLocation: '/',
     redirect: (context, state) {
       final onboarded = ref.read(onboardedProvider);
