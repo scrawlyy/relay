@@ -2,6 +2,8 @@ import Darwin
 import Libbox
 import NetworkExtension
 
+private let SYSPROTO_CONTROL: Int32 = 2
+
 /// The PacketTunnelProvider owns the engine inside the extension process.
 ///
 /// The app sends two command types over sendProviderMessage:
@@ -172,12 +174,15 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
     private func createTunFD() -> Int32 {
         let fd = socket(AF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL)
         guard fd >= 0 else { return -1 }
-        var info = ctl_info()
-        _ = strcpy(&info.ctl_name, "com.apple.net.utun_flow")
-        let connected = withUnsafePointer(to: &info) { pointer in
-            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                connect(fd, $0, socklen_t(MemoryLayout<ctl_info>.size))
-            }
+        // Mirrors ctl_info (u_int32_t ctl_id + char ctl_name[96]) so the
+        // kernel's kern_ctl lookup can parse the buffer on connect.
+        let name = "com.apple.net.utun_flow\0"
+        var info = [UInt8](repeating: 0, count: 4 + 96)
+        for (index, byte) in name.utf8.enumerated() {
+            info[4 + index] = byte
+        }
+        let connected = info.withUnsafeBytes { raw in
+            connect(fd, raw.baseAddress!.assumingMemoryBound(to: sockaddr.self), socklen_t(info.count))
         }
         guard connected == 0 else {
             close(fd)

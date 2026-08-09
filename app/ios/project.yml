@@ -63,7 +63,6 @@ targets:
           - "$(PROJECT_DIR)"
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
-        SWIFT_OBJC_BRIDGING_HEADER: PacketTunnel/PacketTunnelBridgingHeader.h
         OTHER_LDFLAGS:
           - "$(inherited)"
     dependencies:
