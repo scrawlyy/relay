@@ -1,0 +1,44 @@
+# --- Build artifacts ---
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/pubspec.lock
+packages/*/build/
+packages/*/.dart_tool/
+packages/*/pubspec.lock
+engine/libbox.ios/
+engine/libbox.android/
+engine/bin/
+engine/android/
+engine/ios/
+engine/*.aar
+engine/*.framework
+app/android/.gradle/
+app/android/**/build/
+app/android/local.properties
+app/android/app/release/
+app/ios/build/
+app/ios/*.xcodeproj/
+app/ios/*.xcworkspace/
+app/ios/Pods/
+app/ios/Flutter/
+app/ios/Libbox.xcframework/
+app/ios/DerivedData/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- IDE ---
+.idea/
+.vscode/
+*.iml
+
+# --- Secrets (never commit) ---
+*.p12
+*.mobileprovision
+*.jks
+*.keystore
+app/android/key.properties
+ci/secrets/

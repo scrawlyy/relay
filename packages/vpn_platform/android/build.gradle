@@ -1,0 +1,48 @@
+group 'dev.relay.vpn'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.3.2'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+// The embedded sing-box engine (gomobile AAR). Override the path if the
+// engine is built elsewhere:
+//   flutter build apk -- -PrelayEngineAarPath=/abs/path/Libbox.aar
+def engineAar = rootProject.hasProperty('relayEngineAarPath')
+        ? rootProject.property('relayEngineAarPath')
+        : file("${rootProject.projectDir}/../../engine/bin/Libbox.aar")
+
+android {
+    namespace 'dev.relay.vpn'
+    compileSdk 35
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdk 30
+        targetSdk 35
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core:1.13.1"
+    implementation files(engineAar)
+}

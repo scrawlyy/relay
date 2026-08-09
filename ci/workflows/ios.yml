@@ -1,0 +1,58 @@
+name: ios
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  XCODEGEN_VERSION: '2.40.1'
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache-dependency-path: engine/go.sum
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Build engine xcframework (gomobile, requires macOS)
+        working-directory: engine
+        run: |
+          go mod tidy
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          $(go env GOPATH)/bin/gomobile init
+          $(go env GOPATH)/bin/gomobile bind -target=ios -ldflags="-s -w" \
+            -o bin/Libbox.xcframework proxyclient.dev/engine/libbox
+
+      - name: Prepare iOS project
+        run: bash app/ios/scripts/setup_ios.sh
+
+      - name: Analyze
+        working-directory: app
+        run: flutter analyze
+
+      - name: Test
+        working-directory: app
+        run: flutter test
+
+      - name: Build iOS (no codesign)
+        working-directory: app/ios
+        run: |
+          xcodebuild -project Relay.xcodeproj -scheme Runner \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build

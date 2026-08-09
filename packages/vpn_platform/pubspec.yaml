@@ -1,0 +1,19 @@
+name: vpn_platform
+description: VPN control + real-time traffic stats + diagnostics (functional proxy probe, TCP ping, through-tunnel probe) for the Relay app.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.relay.vpn
+        pluginClass: VpnPlugin

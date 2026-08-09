@@ -1,0 +1,78 @@
+name: Relay
+options:
+  bundleIdPrefix: dev.relay
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    DEVELOPMENT_TEAM: ""
+    FLUTTER_BUILD_DIR: "$(PROJECT_DIR)/build/ios"
+    FLUTTER_TARGET: "lib/main.dart"
+    ENABLE_BITCODE: NO
+targets:
+  Runner:
+    type: application
+    platform: iOS
+    sources:
+      - Runner
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.relay.app
+        PRODUCT_NAME: Relay
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_FILE: Runner/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Runner/Runner.entitlements
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(PROJECT_DIR)/Flutter"
+          - "$(PROJECT_DIR)/Flutter/Flutter.framework"
+    preBuildScripts:
+      - name: "Run Script"
+        basedOnDependencyAnalysis: false
+        script: |
+          "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" build
+    postCompileScripts:
+      - name: "Thin Binary"
+        basedOnDependencyAnalysis: false
+        script: |
+          "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" embed_and_thin
+    dependencies:
+      - framework: Flutter/Flutter.framework
+        embed: true
+      - framework: Libbox.xcframework
+        embed: true
+  RelayTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - PacketTunnel
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.relay.app.tunnel
+        PRODUCT_NAME: RelayTunnel
+        INFOPLIST_FILE: PacketTunnel/Info.plist
+        CODE_SIGN_ENTITLEMENTS: PacketTunnel/PacketTunnel.entitlements
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(PROJECT_DIR)"
+        SKIP_INSTALL: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+    dependencies:
+      - framework: Libbox.xcframework
+        embed: true
+schemes:
+  Runner:
+    build:
+      targets:
+        Runner: all
+        RelayTunnel: all
+    run:
+      config: Debug
+    archive:
+      config: Release
