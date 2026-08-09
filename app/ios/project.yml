@@ -1,4 +1,4 @@
-name: Relay
+name: Runner
 options:
   bundleIdPrefix: dev.relay
   deploymentTarget:

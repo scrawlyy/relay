@@ -58,7 +58,7 @@ jobs:
       - name: Build iOS (no codesign)
         working-directory: app/ios
         run: |
-          xcodebuild -project Relay.xcodeproj -scheme Runner \
+          xcodebuild -project Runner.xcodeproj -scheme Runner \
             -configuration Release \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \

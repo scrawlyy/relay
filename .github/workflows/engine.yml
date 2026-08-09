@@ -24,20 +24,6 @@ jobs:
       - name: Tidy
         run: go mod tidy
 
-      - name: Snapshot tidy state (temporary)
-        run: |
-          git diff -- go.mod > gomod.diff
-          cp go.sum go.sum.snapshot
-
-      - name: Upload tidy snapshot (temporary)
-        uses: actions/upload-artifact@v4
-        with:
-          name: tidy-snapshot
-          path: |
-            engine/gomod.diff
-            engine/go.sum.snapshot
-          if-no-files-found: error
-
       - name: Vet
         run: go vet ./libbox/...
 

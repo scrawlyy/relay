@@ -21,7 +21,7 @@ echo "==> Copying haptic plugin Swift source into the Runner target"
 cp packages/haptic_engine/ios/Classes/HapticEnginePlugin.swift app/ios/Runner/HapticEnginePlugin.swift
 
 echo "==> Materializing Flutter iOS artifacts"
-(cd app && flutter precache --ios && flutter pub get && flutter build ios --config-only --no-codesign)
+(cd app && flutter precache --ios && flutter pub get)
 
 echo "==> Linking Flutter.framework into app/ios/Flutter"
 mkdir -p app/ios/Flutter
@@ -35,4 +35,7 @@ fi
 echo "==> Generating Xcode project"
 (cd app/ios && xcodegen generate)
 
-echo "Done. Open app/ios/Relay.xcodeproj and run the Runner scheme."
+echo "==> Configuring Flutter iOS build"
+(cd app && flutter build ios --config-only --no-codesign)
+
+echo "Done. Open app/ios/Runner.xcodeproj and run the Runner scheme."
