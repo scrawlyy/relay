@@ -53,6 +53,8 @@ targets:
         script: |
           "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" embed_and_thin
     dependencies:
+      - target: RelayTunnel
+        embed: true
       - framework: Libbox.xcframework
         embed: true
   RelayTunnel:

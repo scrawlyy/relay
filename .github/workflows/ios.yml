@@ -130,6 +130,14 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Relay.xcarchive \
             CODE_SIGNING_ALLOWED=NO archive
+          APPEX=build/Relay.xcarchive/Products/Applications/Relay.app/PlugIns/RelayTunnel.appex
+          if [ ! -d "$APPEX" ]; then
+            echo "::error::RelayTunnel.appex missing from archive - VPN will fail to start"
+            find build/Relay.xcarchive/Products -maxdepth 4 | head -40
+            exit 1
+          fi
+          echo "Embedded tunnel extension:"
+          find build/Relay.xcarchive/Products/Applications/Relay.app/PlugIns -maxdepth 2 -print
           mkdir -p build/Payload
           cp -R build/Relay.xcarchive/Products/Applications/Relay.app build/Payload/
           (cd build && zip -qry Relay.ipa Payload)
