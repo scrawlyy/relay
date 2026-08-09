@@ -7,12 +7,10 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 
 class HapticEnginePlugin : FlutterPlugin, MethodCallHandler {
     private var context: Context? = null
@@ -74,22 +72,6 @@ class HapticEnginePlugin : FlutterPlugin, MethodCallHandler {
         } catch (_: Exception) {
             // Fall back to a plain tick on devices without predefined effects.
             vibrator.vibrate(VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE))
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        @Suppress("DEPRECATION")
-        fun registerWith(registrar: Registrar) {
-            val plugin = HapticEnginePlugin()
-            plugin.attach(registrar.context(), registrar.messenger())
-        }
-
-        private fun HapticEnginePlugin.attach(context: Context, messenger: BinaryMessenger) {
-            this.context = context
-            channel = MethodChannel(messenger, "dev.relay/haptics").also {
-                it.setMethodCallHandler(this)
-            }
         }
     }
 }

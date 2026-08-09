@@ -69,7 +69,7 @@ jobs:
         working-directory: app/ios
         run: |
           xcodebuild -workspace Runner.xcworkspace -scheme Runner \
-            -configuration Release \
+            -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO build
