@@ -31,7 +31,7 @@ jobs:
           unzip -q /tmp/xcodegen.zip -d "$RUNNER_TEMP/xcodegen"
           chmod +x "$RUNNER_TEMP/xcodegen/xcodegen"
           echo "$RUNNER_TEMP/xcodegen" >> "$GITHUB_PATH"
-          xcodegen --version
+          "$RUNNER_TEMP/xcodegen/xcodegen" --version
 
       - name: Build engine xcframework (gomobile, requires macOS)
         working-directory: engine
