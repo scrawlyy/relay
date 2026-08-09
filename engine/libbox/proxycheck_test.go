@@ -249,8 +249,10 @@ func TestProxyProbeSOCKS5NoAuth(t *testing.T) {
 	if result.HTTPStatus != 204 {
 		t.Fatalf("expected HTTP 204, got %d", result.HTTPStatus)
 	}
-	if result.TotalRTT <= 0 {
-		t.Fatalf("expected positive total rtt, got %d", result.TotalRTT)
+	// TotalRTT is measured in whole milliseconds and can be 0 for
+	// sub-millisecond loopback round trips; only a negative value is an error.
+	if result.TotalRTT < 0 {
+		t.Fatalf("expected non-negative total rtt, got %d", result.TotalRTT)
 	}
 }
 
