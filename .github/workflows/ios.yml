@@ -103,6 +103,8 @@ jobs:
           xcrun simctl bootstatus "iPhone 15" -b 2>/dev/null || true
           APP=$(find "$HOME/Library/Developer/Xcode/DerivedData" -type d -path "*Debug-iphonesimulator/Relay.app" | head -n 1)
           echo "APP=$APP"
+          echo "--- built Info.plist ---"
+          plutil -p "$APP/Info.plist" || true
           xcrun simctl install "iPhone 15" "$APP" || true
           xcrun simctl launch "iPhone 15" dev.relay.app || true
           sleep 12
