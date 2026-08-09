@@ -87,6 +87,7 @@ class VpnTunnelService : VpnService() {
                 .addRoute("0.0.0.0", 0)
                 .addAddress("fdfe:dcba:9876::1", 128)
                 .addRoute("::", 0)
+                .setBlocking(true)
                 .setUnderlyingNetworks(null)
 
             val fd = builder.establish()

@@ -11,7 +11,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import libbox.Libbox
@@ -29,7 +28,7 @@ import java.util.concurrent.Executors
  *  - tcpPing     -> reachability only (TCP handshake RTT)
  *  - probeTunnel -> through the running engine (Clash API URL-test)
  */
-class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener {
+class VpnPlugin : FlutterPlugin, ActivityAware, PluginRegistry.ActivityResultListener {
 
     private var context: Context? = null
     private var activity: Activity? = null
@@ -46,7 +45,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
         context = binding.applicationContext
         val messenger: BinaryMessenger = binding.binaryMessenger
         controlChannel = MethodChannel(messenger, "dev.relay/vpn").also {
-            it.setMethodCallHandler(this)
+            it.setMethodCallHandler { call, result -> onMethodCall(call, result) }
         }
         EventChannel(messenger, "dev.relay/vpn/status")
             .setStreamHandler(object : EventChannel.StreamHandler {
@@ -96,7 +95,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
         context = null
     }
 
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+    private fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "connect" -> handleConnect(call, result)
             "disconnect" -> handleDisconnect(result)
@@ -106,7 +105,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
                     val host = call.argument<String>("host") ?: ""
                     val port = (call.argument<Number>("port") ?: 0).toInt()
                     val timeout = (call.argument<Number>("timeoutMs") ?: 5000).toInt()
-                    Libbox.tCPPing(host, port, timeout).toMap()
+                    Libbox.tcpPing(host, port, timeout).toMap()
                 }.onSuccess { result.success(it) }
                     .onFailure { result.success(probeFailureMap(it.message)) }
             }
