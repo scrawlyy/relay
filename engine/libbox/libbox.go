@@ -69,11 +69,11 @@ var (
 	controllerSecret string
 	outboundTag      string
 
-	trafficAccess  sync.Mutex
-	uplinkTotal    int64
-	downlinkTotal  int64
+	trafficAccess   sync.Mutex
+	uplinkTotal     int64
+	downlinkTotal   int64
 	trafficListener TrafficListener
-	statsCancel    chan struct{}
+	statsCancel     chan struct{}
 )
 
 // Setup initializes the engine's working directories and logging. Call once
@@ -173,10 +173,11 @@ func SetTrafficListener(listener TrafficListener) {
 }
 
 // GetTraffic returns the accumulated uplink/downlink totals in bytes.
-func GetTraffic() (int64, int64) {
+// Updated to return an error as the final return value for gomobile Objective-C compatibility.
+func GetTraffic() (int64, int64, error) {
 	trafficAccess.Lock()
 	defer trafficAccess.Unlock()
-	return uplinkTotal, downlinkTotal
+	return uplinkTotal, downlinkTotal, nil
 }
 
 // AvailablePort returns a free TCP port on loopback (used for the Clash API).
