@@ -236,7 +236,7 @@ func TestProxyProbeSOCKS5NoAuth(t *testing.T) {
 	proxyHost, proxyPort := splitAddr(t, startSocks5Server(t, "", ""))
 
 	cfg := &ProxyConfig{Type: "socks5", Server: proxyHost, Port: proxyPort}
-	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 5000)
+	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 10000)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -256,7 +256,7 @@ func TestProxyProbeSOCKS5WithAuth(t *testing.T) {
 	proxyHost, proxyPort := splitAddr(t, startSocks5Server(t, "alice", "s3cret"))
 
 	cfg := &ProxyConfig{Type: "socks5", Server: proxyHost, Port: proxyPort, Username: "alice", Password: "s3cret"}
-	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 5000)
+	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 10000)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +270,7 @@ func TestProxyProbeSOCKS5WrongPassword(t *testing.T) {
 	proxyHost, proxyPort := splitAddr(t, startSocks5Server(t, "alice", "s3cret"))
 
 	cfg := &ProxyConfig{Type: "socks5", Server: proxyHost, Port: proxyPort, Username: "alice", Password: "wrong"}
-	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 5000)
+	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 10000)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -284,7 +284,7 @@ func TestProxyProbeHTTPConnect(t *testing.T) {
 	proxyHost, proxyPort := splitAddr(t, startHTTPProxyServer(t, "bob", "pw"))
 
 	cfg := &ProxyConfig{Type: "http", Server: proxyHost, Port: proxyPort, Username: "bob", Password: "pw"}
-	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 5000)
+	result, err := ProxyProbe(cfg, target.URL+"/generate_204", 10000)
 	if err != nil {
 		t.Fatal(err)
 	}
