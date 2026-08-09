@@ -83,5 +83,6 @@ func (emptyInterfaceIterator) HasNext() bool                 { return false }
 
 type emptyStringIterator struct{}
 
-func (emptyStringIterator) Next() string { return "" }
-func (emptyStringIterator) HasNext() bool { return false }
+func (emptyStringIterator) Len() int32     { return 0 }
+func (emptyStringIterator) Next() string   { return "" }
+func (emptyStringIterator) HasNext() bool  { return false }
