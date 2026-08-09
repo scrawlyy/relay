@@ -67,7 +67,7 @@ class ConnectionController extends Notifier<ConnectionState> {
     ref.listen(vpnStatusProvider, (previous, next) {
       next.whenOrNull(data: _onNativeStatus);
     });
-    return state ?? ConnectionState.idle;
+    return ConnectionState.idle;
   }
 
   /// Connect the active profile. The actual transition to [ConnectionPhase.connected]
