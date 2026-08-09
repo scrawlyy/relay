@@ -23,6 +23,7 @@ app/ios/*.xcodeproj/
 app/ios/*.xcworkspace/
 app/ios/Pods/
 app/ios/Flutter/
+!app/ios/Flutter/AppFrameworkInfo.plist
 app/ios/Libbox.xcframework/
 app/ios/DerivedData/
 
