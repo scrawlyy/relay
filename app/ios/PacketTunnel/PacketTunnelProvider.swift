@@ -10,6 +10,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
 
     private var tunFd: Int32 = -1
     private var engineStarted = false
+    private var uplinkTotal: Int64 = 0
+    private var downlinkTotal: Int64 = 0
 
     // MARK: - Lifecycle
 
@@ -29,7 +31,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
         do {
             try setupEngine()
             let configJSON = try buildConfigJSON(profile: profile)
-            try LibboxStartWithConfig(configJSON, tunFd)
+            var error: NSError?
+            guard LibboxStartWithConfig(configJSON, tunFd, &error) else {
+                throw error ?? PacketTunnelError.engineStartFailed
+            }
             engineStarted = true
         } catch {
             if tunFd >= 0 { close(tunFd); tunFd = -1 }
@@ -55,7 +60,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
 
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         if engineStarted {
-            try? LibboxStop()
+            var error: NSError?
+            LibboxStop(&error)
             engineStarted = false
         }
         if tunFd >= 0 {
@@ -72,14 +78,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
         }
         let response: Data?
         if message == "stats" {
-            if let stats = try? LibboxGetTraffic() {
-                response = try? JSONSerialization.data(withJSONObject: [
-                    "upBytes": stats.uplink,
-                    "downBytes": stats.downlink,
-                ])
-            } else {
-                response = nil
-            }
+            response = try? JSONSerialization.data(withJSONObject: [
+                "upBytes": uplinkTotal,
+                "downBytes": downlinkTotal,
+            ])
         } else if message.hasPrefix("probe|") {
             let parts = message.dropFirst("probe|".count).split(separator: "|", maxSplits: 1)
             if let timeoutStr = parts.first, let timeout = Int(timeoutStr),
@@ -96,7 +98,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
 
     private func tunnelProbeResponse(url: String, timeoutMs: Int) -> Data? {
         do {
-            let outcome = try LibboxTunnelProbe(url, Int32(timeoutMs))
+            var error: NSError?
+            guard let outcome = LibboxTunnelProbe(url, Int32(timeoutMs), &error) else {
+                throw error ?? PacketTunnelError.probeFailed
+            }
             return try? JSONSerialization.data(withJSONObject: [
                 "ok": outcome.ok(),
                 "connectRttMs": outcome.connectRTT(),
@@ -130,7 +135,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
         for directory in [base, working, temp] {
             try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         }
-        try LibboxSetup(base.path, working.path, temp.path)
+        var error: NSError?
+        guard LibboxSetup(base.path, working.path, temp.path, &error) else {
+            throw error ?? PacketTunnelError.engineSetupFailed
+        }
         LibboxSetTrafficListener(self)
     }
 
@@ -149,9 +157,9 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
 
     // MARK: - LibboxTrafficListenerProtocol
 
-    func onTraffic(_ uplink: Int64, _ downlink: Int64) {
-        // Accumulated totals are read on demand via handleAppMessage("stats");
-        // no per-second work is needed here.
+    func onTraffic(_ uplink: Int64, downlink: Int64) {
+        uplinkTotal = uplink
+        downlinkTotal = downlink
     }
 
     // MARK: - utun fd
@@ -178,6 +186,9 @@ enum PacketTunnelError: LocalizedError {
     case missingConfiguration
     case tunCreationFailed
     case appGroupUnavailable
+    case engineStartFailed
+    case engineSetupFailed
+    case probeFailed
 
     var errorDescription: String? {
         switch self {
@@ -187,6 +198,12 @@ enum PacketTunnelError: LocalizedError {
             return "Failed to create utun interface"
         case .appGroupUnavailable:
             return "App group container unavailable"
+        case .engineStartFailed:
+            return "Failed to start engine"
+        case .engineSetupFailed:
+            return "Failed to initialize engine"
+        case .probeFailed:
+            return "Tunnel probe failed"
         }
     }
 }

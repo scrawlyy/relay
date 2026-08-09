@@ -49,6 +49,7 @@ jobs:
             exit 1
           fi
           ls -la bin/Libbox.xcframework
+          find bin/Libbox.xcframework -name "*.h" -print -exec cat {} \;
 
       - name: Disable Swift Package Manager (use CocoaPods plugin integration)
         run: flutter config --no-enable-swift-package-manager
