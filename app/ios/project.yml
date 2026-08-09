@@ -28,6 +28,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: dev.relay.app
         PRODUCT_NAME: Relay
         TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_OBJC_BRIDGING_HEADER: Runner/Runner-Bridging-Header.h
         INFOPLIST_FILE: Runner/Info.plist
         CODE_SIGN_ENTITLEMENTS: Runner/Runner.entitlements
         OTHER_LDFLAGS:

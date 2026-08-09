@@ -59,4 +59,7 @@ fi
 echo "==> Configuring Flutter iOS build"
 (cd app && flutter build ios --config-only --no-codesign)
 
+echo "==> Regenerating Xcode project (picks up GeneratedPluginRegistrant.h/.m)"
+(cd app/ios && xcodegen generate)
+
 echo "Done. Open app/ios/Runner.xcodeproj and run the Runner scheme."

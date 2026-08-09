@@ -57,6 +57,15 @@ jobs:
       - name: Prepare iOS project
         run: bash app/ios/scripts/setup_ios.sh
 
+      - name: Dump generated plugin registrant
+        working-directory: app/ios
+        run: |
+          ls Runner/ | grep -i registrant || true
+          echo "--- GeneratedPluginRegistrant.h ---"
+          cat Runner/GeneratedPluginRegistrant.h 2>/dev/null || echo "(missing)"
+          echo "--- GeneratedPluginRegistrant.m ---"
+          cat Runner/GeneratedPluginRegistrant.m 2>/dev/null || echo "(missing)"
+
       - name: Analyze
         working-directory: app
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
