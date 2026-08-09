@@ -1,7 +1,7 @@
 name: relay_app
 description: Relay — a premium, minimalist proxy client for iOS and Android.
 publish_to: none
-version: 0.1.0
+version: 0.1.0+1
 
 environment:
   sdk: ^3.5.0
