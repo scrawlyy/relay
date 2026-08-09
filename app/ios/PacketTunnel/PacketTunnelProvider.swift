@@ -103,11 +103,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
                 throw error ?? PacketTunnelError.probeFailed
             }
             return try? JSONSerialization.data(withJSONObject: [
-                "ok": outcome.ok(),
-                "connectRttMs": outcome.connectRTT(),
-                "totalRttMs": outcome.totalRTT(),
-                "httpStatus": outcome.httpStatus(),
-                "error": outcome.error(),
+                "ok": outcome.ok,
+                "connectRttMs": outcome.connectRTT,
+                "totalRttMs": outcome.totalRTT,
+                "httpStatus": outcome.httpStatus,
+                "error": outcome.error,
             ])
         } catch {
             return try? JSONSerialization.data(withJSONObject: [
@@ -144,13 +144,17 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
 
     private func buildConfigJSON(profile: [String: Any]) throws -> String {
         let config = LibboxProxyConfig()
-        config.setType(profile["protocol"] as? String ?? "socks5")
-        config.setServer(profile["host"] as? String ?? "")
-        config.setPort(Int32((profile["port"] as? NSNumber)?.intValue ?? 0))
-        config.setUsername(profile["username"] as? String ?? "")
-        config.setPassword(profile["password"] as? String ?? "")
+        config.type = profile["protocol"] as? String ?? "socks5"
+        config.server = profile["host"] as? String ?? ""
+        config.port = Int32((profile["port"] as? NSNumber)?.intValue ?? 0)
+        config.username = profile["username"] as? String ?? ""
+        config.password = profile["password"] as? String ?? ""
 
-        let port = try LibboxAvailablePort(10000)
+        var port: Int32 = 0
+        var error: NSError?
+        guard LibboxAvailablePort(10000, &port, &error) else {
+            throw error ?? PacketTunnelError.engineSetupFailed
+        }
         let secret = LibboxRandomSecret(16)
         return LibboxBuildConfig(config, port, secret, 4064)
     }
