@@ -172,12 +172,22 @@ func SetTrafficListener(listener TrafficListener) {
 	trafficListener = listener
 }
 
+// TrafficStats holds the accumulated traffic totals in bytes.
+type TrafficStats struct {
+	Uplink   int64
+	Downlink int64
+}
+
 // GetTraffic returns the accumulated uplink/downlink totals in bytes.
-// Updated to return an error as the final return value for gomobile Objective-C compatibility.
-func GetTraffic() (int64, int64, error) {
+// The two counters are wrapped in TrafficStats because gomobile only allows
+// exported functions to return at most one value plus an optional error.
+func GetTraffic() (TrafficStats, error) {
 	trafficAccess.Lock()
 	defer trafficAccess.Unlock()
-	return uplinkTotal, downlinkTotal, nil
+	return TrafficStats{
+		Uplink:   uplinkTotal,
+		Downlink: downlinkTotal,
+	}, nil
 }
 
 // AvailablePort returns a free TCP port on loopback (used for the Clash API).

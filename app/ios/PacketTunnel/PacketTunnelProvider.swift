@@ -72,8 +72,14 @@ class PacketTunnelProvider: NEPacketTunnelProvider, LibboxTrafficListenerProtoco
         }
         let response: Data?
         if message == "stats" {
-            let (up, down) = LibboxGetTraffic()
-            response = try? JSONSerialization.data(withJSONObject: ["upBytes": up, "downBytes": down])
+            if let stats = try? LibboxGetTraffic() {
+                response = try? JSONSerialization.data(withJSONObject: [
+                    "upBytes": stats.uplink,
+                    "downBytes": stats.downlink,
+                ])
+            } else {
+                response = nil
+            }
         } else if message.hasPrefix("probe|") {
             let parts = message.dropFirst("probe|".count).split(separator: "|", maxSplits: 1)
             if let timeoutStr = parts.first, let timeout = Int(timeoutStr),
