@@ -30,6 +30,9 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         INFOPLIST_FILE: Runner/Info.plist
         CODE_SIGN_ENTITLEMENTS: Runner/Runner.entitlements
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-lresolv"
         FRAMEWORK_SEARCH_PATHS:
           - "$(inherited)"
           - "$(PROJECT_DIR)/Flutter"
@@ -65,6 +68,7 @@ targets:
         APPLICATION_EXTENSION_API_ONLY: YES
         OTHER_LDFLAGS:
           - "$(inherited)"
+          - "-lresolv"
     dependencies:
       - framework: Libbox.xcframework
         embed: true
