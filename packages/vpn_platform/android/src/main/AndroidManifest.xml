@@ -11,6 +11,6 @@
             android:name=".VpnTunnelService"
             android:exported="false"
             android:permission="android.permission.BIND_VPN_SERVICE"
-            android:foregroundServiceType="vpn" />
+            android:foregroundServiceType="systemExempted" />
     </application>
 </manifest>

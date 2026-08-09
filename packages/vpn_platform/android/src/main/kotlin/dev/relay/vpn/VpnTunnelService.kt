@@ -55,7 +55,7 @@ class VpnTunnelService : VpnService() {
                     NOTIFICATION_ID,
                     buildNotification(),
                     if (Build.VERSION.SDK_INT >= 34) {
-                        ServiceCompat.FOREGROUND_SERVICE_TYPE_VPN
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
                     } else {
                         0
                     },
