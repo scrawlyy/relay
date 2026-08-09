@@ -96,6 +96,28 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO build
 
+      - name: Launch on simulator and capture engine logs (diagnostic)
+        if: always()
+        working-directory: app/ios
+        run: |
+          xcrun simctl bootstatus "iPhone 15" -b 2>/dev/null || true
+          APP=$(find "$HOME/Library/Developer/Xcode/DerivedData" -type d -path "*Debug-iphonesimulator/Relay.app" | head -n 1)
+          echo "APP=$APP"
+          xcrun simctl install "iPhone 15" "$APP" || true
+          xcrun simctl launch "iPhone 15" dev.relay.app || true
+          sleep 12
+          xcrun simctl io "iPhone 15" screenshot /tmp/relay-sim-screen.png || true
+          echo "--- Relay process log (last 2m) ---"
+          xcrun simctl spawn "iPhone 15" log show --last 2m --predicate 'process == "Relay"' --style compact 2>/dev/null | tail -100 || true
+
+      - name: Upload simulator screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relay-sim-screenshot
+          path: /tmp/relay-sim-screen.png
+          if-no-files-found: ignore
+
       - name: Build unsigned device IPA (for sideloading)
         working-directory: app/ios
         run: |
