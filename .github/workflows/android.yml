@@ -31,7 +31,7 @@ jobs:
           cache: true
 
       - name: Build engine AAR (gomobile)
-        working-directory: engine
+        working-directory: engine`n        env:`n          ANDROID_MIN_SDK: '21'
         run: |
           go mod tidy
           go install golang.org/x/mobile/cmd/gomobile@latest
