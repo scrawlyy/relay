@@ -38,6 +38,10 @@ targets:
           - "$(inherited)"
           - "$(PROJECT_DIR)/Flutter"
           - "$(PROJECT_DIR)"
+      configFiles:
+        Debug: Flutter/Debug.xcconfig
+        Profile: Flutter/Profile.xcconfig
+        Release: Flutter/Release.xcconfig
     preBuildScripts:
       - name: "Run Script"
         basedOnDependencyAnalysis: false

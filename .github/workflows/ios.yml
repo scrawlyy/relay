@@ -66,6 +66,19 @@ jobs:
           echo "--- GeneratedPluginRegistrant.m ---"
           cat Runner/GeneratedPluginRegistrant.m 2>/dev/null || echo "(missing)"
 
+      - name: Dump iOS build settings
+        if: always()
+        working-directory: app/ios
+        run: |
+          echo "--- xcconfigs ---"
+          for f in Flutter/*.xcconfig; do echo "### $f"; cat "$f"; done
+          echo "### Pods-Runner.debug.xcconfig"
+          sed -n '1,60p' "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig" 2>/dev/null || echo "(missing)"
+          echo "--- workspace ---"
+          cat Runner.xcworkspace/contents.xcworkspacedata
+          echo "--- effective settings ---"
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug -showBuildSettings 2>/dev/null | grep -E "FRAMEWORK_SEARCH_PATHS|OTHER_LDFLAGS|PODS_|BUILD_DIR" || true
+
       - name: Analyze
         working-directory: app
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
@@ -74,6 +87,15 @@ jobs:
         working-directory: app
         run: flutter test
 
+      - name: Build pod FlutterSecureStorage (module for generated registrant)
+        working-directory: app/ios
+        run: |
+          xcodebuild -project Pods/Pods.xcodeproj -target FlutterSecureStorage \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build/derived \
+            CODE_SIGNING_ALLOWED=NO build
+
       - name: Build iOS (no codesign)
         working-directory: app/ios
         run: |
@@ -81,4 +103,5 @@ jobs:
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/derived \
             CODE_SIGNING_ALLOWED=NO build
