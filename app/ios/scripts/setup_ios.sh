@@ -35,7 +35,10 @@ fi
 echo "==> Writing Flutter xcconfig files"
 for cfg in Debug Profile Release; do
   if [ ! -f "app/ios/Flutter/$cfg.xcconfig" ]; then
-    printf '#include "Generated.xcconfig"\n' > "app/ios/Flutter/$cfg.xcconfig"
+    {
+      printf '#include? "../Pods/Target Support Files/Pods-Runner/Pods-Runner.%s.xcconfig"\n' "$(echo "$cfg" | tr 'A-Z' 'a-z')"
+      printf '#include "Generated.xcconfig"\n'
+    } > "app/ios/Flutter/$cfg.xcconfig"
   fi
 done
 
