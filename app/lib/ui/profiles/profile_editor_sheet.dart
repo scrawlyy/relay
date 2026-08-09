@@ -339,37 +339,58 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
 }
 
 /// Animated glow around a text field while it has focus.
-class _FocusGlowField extends StatelessWidget {
+class _FocusGlowField extends StatefulWidget {
   const _FocusGlowField({required this.focusNode, required this.child});
 
   final FocusNode focusNode;
   final Widget child;
 
   @override
+  State<_FocusGlowField> createState() => _FocusGlowFieldState();
+}
+
+class _FocusGlowFieldState extends State<_FocusGlowField> {
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_sync);
+    _focused = widget.focusNode.hasFocus;
+  }
+
+  void _sync() {
+    if (mounted && _focused != widget.focusNode.hasFocus) {
+      setState(() => _focused = widget.focusNode.hasFocus);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_sync);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: focusNode,
-      builder: (context, focused, _) {
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: focused ? 1 : 0),
-          duration: AppTokens.durationMed,
-          curve: AppTokens.easeOut,
-          builder: (context, t, child) => Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTokens.radiusInner + 6),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTokens.accent.withValues(alpha: 0.22 * t),
-                  blurRadius: 16 * t,
-                  spreadRadius: 2 * t,
-                ),
-              ],
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: _focused ? 1 : 0),
+      duration: AppTokens.durationMed,
+      curve: AppTokens.easeOut,
+      builder: (context, t, child) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppTokens.radiusInner + 6),
+          boxShadow: [
+            BoxShadow(
+              color: AppTokens.accent.withValues(alpha: 0.22 * t),
+              blurRadius: 16 * t,
+              spreadRadius: 2 * t,
             ),
-            child: child,
-          ),
-          child: child,
-        );
-      },
+          ],
+        ),
+        child: child,
+      ),
+      child: widget.child,
     );
   }
 }
