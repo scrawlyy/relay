@@ -87,13 +87,14 @@ jobs:
         working-directory: app
         run: flutter test
 
-      - name: Build iOS (no codesign)
+      - name: Build iOS (no codesign, simulator, seeded shell entrypoint)
         working-directory: app/ios
         run: |
           xcodebuild -workspace Runner.xcworkspace -scheme Runner \
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
+            FLUTTER_TARGET=lib/sim_seed_main.dart \
             CODE_SIGNING_ALLOWED=NO build
 
       - name: Launch on simulator and capture engine logs (diagnostic)
@@ -110,19 +111,7 @@ jobs:
           sleep 12
           xcrun simctl io "iPhone 15" screenshot /tmp/relay-sim-screen.png || true
 
-          echo "--- seed prefs (onboarded + one profile) and relaunch to land on the shell ---"
-          xcrun simctl terminate "iPhone 15" dev.relay.app 2>/dev/null || true
-          sleep 2
-          xcrun simctl spawn "iPhone 15" defaults write dev.relay.app onboarded.v1 -bool YES || true
-          xcrun simctl spawn "iPhone 15" defaults write dev.relay.app active_profile_id.v1 -string seed1 || true
-          xcrun simctl spawn "iPhone 15" defaults write dev.relay.app profiles.v1 -string '[{"id":"seed1","name":"CI Seed","protocol":"socks5","host":"1.2.3.4","port":1080}]' || true
-          echo "--- defaults readback (verification) ---"
-          xcrun simctl spawn "iPhone 15" defaults read dev.relay.app || true
-          xcrun simctl launch "iPhone 15" dev.relay.app -onboarded.v1 YES -active_profile_id.v1 seed1 -profiles.v1 '[{"id":"seed1","name":"CI Seed","protocol":"socks5","host":"1.2.3.4","port":1080}]' || true
-          sleep 12
-          xcrun simctl io "iPhone 15" screenshot /tmp/relay-sim-shell.png || true
-
-          echo "--- Relay process log (last 2m, full) ---"
+          echo "--- Relay process log (last 2m, flutter lines) ---"
           xcrun simctl spawn "iPhone 15" log show --last 2m --predicate 'process == "Relay"' --style compact 2>/dev/null | grep -a 'flutter:' | tail -300 || true
 
       - name: Upload simulator screenshot
@@ -131,14 +120,6 @@ jobs:
         with:
           name: relay-sim-screenshot
           path: /tmp/relay-sim-screen.png
-          if-no-files-found: ignore
-
-      - name: Upload seeded shell screenshot
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: relay-sim-shell
-          path: /tmp/relay-sim-shell.png
           if-no-files-found: ignore
 
       - name: Build unsigned device IPA (for sideloading)
