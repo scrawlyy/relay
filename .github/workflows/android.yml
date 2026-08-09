@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/powershell /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/emulator /usr/local/lib/android/sdk/system-images /usr/local/lib/android/sdk/ndk || true
+          df -h /
+
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25.x'
