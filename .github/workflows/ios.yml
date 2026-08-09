@@ -50,6 +50,9 @@ jobs:
           fi
           ls -la bin/Libbox.xcframework
 
+      - name: Disable Swift Package Manager (use CocoaPods plugin integration)
+        run: flutter config --no-enable-swift-package-manager
+
       - name: Prepare iOS project
         run: bash app/ios/scripts/setup_ios.sh
 
@@ -64,7 +67,7 @@ jobs:
       - name: Build iOS (no codesign)
         working-directory: app/ios
         run: |
-          xcodebuild -project Runner.xcodeproj -scheme Runner \
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner \
             -configuration Release \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
