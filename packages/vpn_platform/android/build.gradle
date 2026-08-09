@@ -44,5 +44,8 @@ android {
 
 dependencies {
     implementation "androidx.core:core:1.13.1"
-    implementation files(engineAar)
+    // Compile-only: packaging a local .aar into a library AAR is rejected by
+    // AGP. The app module declares the engine AAR itself so classes and JNI
+    // libs reach the APK.
+    compileOnly files(engineAar)
 }

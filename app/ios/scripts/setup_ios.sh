@@ -48,9 +48,6 @@ echo "==> Generating Xcode project"
 echo "==> Configuring Flutter iOS build"
 (cd app && flutter build ios --config-only --no-codesign)
 
-echo "==> Regenerating Xcode project (picks up GeneratedPluginRegistrant.h/.m)"
-(cd app/ios && xcodegen generate)
-
 echo "==> Adding Pods project to workspace"
 cat > app/ios/Runner.xcworkspace/contents.xcworkspacedata <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>

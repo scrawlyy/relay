@@ -68,3 +68,13 @@ android {
 flutter {
     source = "../.."
 }
+
+// The embedded sing-box engine (gomobile AAR). The plugin module only
+// compiles against it; the app packages classes and JNI libs into the APK.
+def engineAar = rootProject.hasProperty('relayEngineAarPath')
+        ? rootProject.property('relayEngineAarPath')
+        : file("${rootProject.projectDir}/../../engine/bin/Libbox.aar")
+
+dependencies {
+    implementation files(engineAar)
+}

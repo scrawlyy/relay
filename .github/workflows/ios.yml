@@ -87,15 +87,6 @@ jobs:
         working-directory: app
         run: flutter test
 
-      - name: Build pod FlutterSecureStorage (module for generated registrant)
-        working-directory: app/ios
-        run: |
-          xcodebuild -project Pods/Pods.xcodeproj -target FlutterSecureStorage \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -derivedDataPath build/derived \
-            CODE_SIGNING_ALLOWED=NO build
-
       - name: Build iOS (no codesign)
         working-directory: app/ios
         run: |
@@ -103,5 +94,4 @@ jobs:
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build/derived \
             CODE_SIGNING_ALLOWED=NO build
