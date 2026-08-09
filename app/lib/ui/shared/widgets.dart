@@ -4,6 +4,44 @@ import '../../core/theme/app_tokens.dart';
 
 /// Shared visual primitives: cards, section headers, pills, buttons.
 
+/// Wraps a child with a tactile press animation (scale down on press down,
+/// spring back on release/cancel). Optionally fires [onTap].
+class PressScale extends StatefulWidget {
+  const PressScale({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.pressedScale = 0.94,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+  final double pressedScale;
+
+  @override
+  State<PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _pressed ? widget.pressedScale : 1.0,
+        duration: AppTokens.durationFast,
+        curve: AppTokens.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 class SectionCard extends StatelessWidget {
   const SectionCard({
     super.key,
@@ -18,7 +56,7 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final card = Material(
       color: AppTokens.surface,
       borderRadius: BorderRadius.circular(AppTokens.radiusCard),
       child: InkWell(
@@ -34,6 +72,8 @@ class SectionCard extends StatelessWidget {
         ),
       ),
     );
+    if (onTap == null) return card;
+    return PressScale(child: card);
   }
 }
 

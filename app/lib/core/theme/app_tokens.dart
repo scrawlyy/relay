@@ -17,6 +17,11 @@ abstract final class AppTokens {
   static const textTertiary = Color(0xFF6A6A76);
   static const hairline = Color(0xFF26262F);
 
+  // Glass (frosted surfaces over blurred content)
+  static const glassFill = Color(0x9914141B);
+  static const glassStroke = Color(0x26FFFFFF);
+  static const glassHighlight = Color(0x14FFFFFF);
+
   // Shape
   static const radiusCard = 20.0;
   static const radiusInner = 12.0;

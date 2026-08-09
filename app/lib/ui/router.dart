@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/theme/app_tokens.dart';
 import '../providers/onboarding_providers.dart';
 import '../providers/profiles_providers.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -10,6 +11,29 @@ import 'onboarding/onboarding_screen.dart';
 import 'profiles/profiles_screen.dart';
 import 'settings/settings_screen.dart';
 import 'shell/root_shell.dart';
+
+/// Route-level entrance: fade + gentle rise, shared by every page.
+Page<void> _fadeSlidePage(Widget child) => CustomTransitionPage<void>(
+      transitionDuration: AppTokens.durationMed,
+      reverseTransitionDuration: AppTokens.durationFast,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 0.05),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -33,7 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => _fadeSlidePage(const OnboardingScreen()),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -42,25 +66,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/',
-              builder: (context, state) => const DashboardScreen(),
+              pageBuilder: (context, state) => _fadeSlidePage(const DashboardScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/profiles',
-              builder: (context, state) => const ProfilesScreen(),
+              pageBuilder: (context, state) => _fadeSlidePage(const ProfilesScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/diagnostics',
-              builder: (context, state) => const DiagnosticsScreen(),
+              pageBuilder: (context, state) => _fadeSlidePage(const DiagnosticsScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/settings',
-              builder: (context, state) => const SettingsScreen(),
+              pageBuilder: (context, state) => _fadeSlidePage(const SettingsScreen()),
             ),
           ]),
         ],

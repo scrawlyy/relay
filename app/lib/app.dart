@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/diagnostics/error_surface.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/onboarding_providers.dart';
 import 'ui/router.dart';
@@ -14,18 +15,20 @@ class RelayApp extends ConsumerWidget {
     ref.watch(onboardedProvider);
     final router = ref.watch(appRouterProvider);
 
-    return MaterialApp.router(
-      title: 'Relay',
-      theme: buildAppTheme(),
-      themeMode: ThemeMode.dark,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en')],
+    return ErrorSurfaceBanner(
+      child: MaterialApp.router(
+        title: 'Relay',
+        theme: buildAppTheme(),
+        themeMode: ThemeMode.dark,
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en')],
+      ),
     );
   }
 }

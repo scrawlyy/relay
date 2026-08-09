@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/haptics/haptics.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../providers/onboarding_providers.dart';
+import '../shared/widgets.dart';
 
 /// First-run experience: three short slides about what Relay does and how
 /// privacy is handled.
@@ -128,24 +129,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
-              child: FilledButton(
-                onPressed: () {
-                  if (_page < _slides.length - 1) {
-                    _controller.nextPage(
-                      duration: AppTokens.durationMed,
-                      curve: AppTokens.easeEmphasized,
-                    );
-                  } else {
-                    AppHaptics.tap();
-                    ref.read(onboardedProvider.notifier).complete();
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTokens.accent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              child: PressScale(
+                child: FilledButton(
+                  onPressed: () {
+                    if (_page < _slides.length - 1) {
+                      _controller.nextPage(
+                        duration: AppTokens.durationMed,
+                        curve: AppTokens.easeEmphasized,
+                      );
+                    } else {
+                      AppHaptics.tap();
+                      ref.read(onboardedProvider.notifier).complete();
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTokens.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: AppTokens.durationFast,
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
+                    child: Text(
+                      _page < _slides.length - 1 ? 'Next' : 'Get started',
+                      key: ValueKey(_page < _slides.length - 1),
+                    ),
+                  ),
                 ),
-                child: Text(_page < _slides.length - 1 ? 'Next' : 'Get started'),
               ),
             ),
           ],

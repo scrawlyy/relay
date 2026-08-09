@@ -11,6 +11,7 @@ import '../../platform/profile_adapter.dart';
 import '../../providers/profiles_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/vpn_providers.dart';
+import '../shared/widgets.dart';
 
 /// Bottom-sheet editor with live validation and an inline FUNCTIONAL proxy
 /// test (full handshake + probe request through the proxy).
@@ -34,6 +35,12 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
 
   late ProxyProtocol _protocol;
   late bool _obscurePassword;
+
+  final _nameFocus = FocusNode();
+  final _hostFocus = FocusNode();
+  final _portFocus = FocusNode();
+  final _usernameFocus = FocusNode();
+  final _passwordFocus = FocusNode();
 
   bool _testing = false;
   vpn.ProbeOutcome? _testResult;
@@ -60,6 +67,11 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
     _port.dispose();
     _username.dispose();
     _password.dispose();
+    _nameFocus.dispose();
+    _hostFocus.dispose();
+    _portFocus.dispose();
+    _usernameFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -156,11 +168,15 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _name,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (_) => _nameError(),
+              _FocusGlowField(
+                focusNode: _nameFocus,
+                child: TextFormField(
+                  controller: _name,
+                  focusNode: _nameFocus,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (_) => _nameError(),
+                ),
               ),
               const SizedBox(height: 12),
               SegmentedButton<ProxyProtocol>(
@@ -188,40 +204,68 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _host,
-                autocorrect: false,
-                decoration: const InputDecoration(labelText: 'Server host'),
-                validator: (_) => _hostError(),
+              _FocusGlowField(
+                focusNode: _hostFocus,
+                child: TextFormField(
+                  controller: _host,
+                  focusNode: _hostFocus,
+                  autocorrect: false,
+                  decoration: const InputDecoration(labelText: 'Server host'),
+                  validator: (_) => _hostError(),
+                ),
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _port,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Port'),
-                validator: (_) => _portError(),
+              _FocusGlowField(
+                focusNode: _portFocus,
+                child: TextFormField(
+                  controller: _port,
+                  focusNode: _portFocus,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Port'),
+                  validator: (_) => _portError(),
+                ),
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _username,
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: const InputDecoration(labelText: 'Username (optional)'),
+              _FocusGlowField(
+                focusNode: _usernameFocus,
+                child: TextFormField(
+                  controller: _username,
+                  focusNode: _usernameFocus,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: const InputDecoration(labelText: 'Username (optional)'),
+                ),
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _password,
-                obscureText: _obscurePassword,
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: InputDecoration(
-                  labelText: 'Password (optional)',
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      size: 18,
-                      color: AppTokens.textTertiary,
+              _FocusGlowField(
+                focusNode: _passwordFocus,
+                child: TextFormField(
+                  controller: _password,
+                  focusNode: _passwordFocus,
+                  obscureText: _obscurePassword,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: InputDecoration(
+                    labelText: 'Password (optional)',
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: AnimatedSwitcher(
+                        duration: AppTokens.durationFast,
+                        transitionBuilder: (child, animation) =>
+                            RotationTransition(
+                              turns: Tween(begin: 0.5, end: 1.0).animate(animation),
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            ),
+                        child: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          key: ValueKey(_obscurePassword),
+                          size: 18,
+                          color: AppTokens.textTertiary,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -232,33 +276,37 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _testing ? null : _runTest,
-                      icon: _testing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.network_check, size: 18),
-                      label: Text(_testing ? 'Testing…' : 'Test proxy'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTokens.accent,
-                        side: const BorderSide(color: AppTokens.hairline),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: PressScale(
+                      child: OutlinedButton.icon(
+                        onPressed: _testing ? null : _runTest,
+                        icon: _testing
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.network_check, size: 18),
+                        label: Text(_testing ? 'Testing…' : 'Test proxy'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTokens.accent,
+                          side: const BorderSide(color: AppTokens.hairline),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton(
-                      onPressed: _saving ? null : _save,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppTokens.accent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: PressScale(
+                      child: FilledButton(
+                        onPressed: _saving ? null : _save,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTokens.accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(_saving ? 'Saving…' : 'Save'),
                       ),
-                      child: Text(_saving ? 'Saving…' : 'Save'),
                     ),
                   ),
                 ],
@@ -287,6 +335,42 @@ class _ProfileEditorSheetState extends ConsumerState<ProfileEditorSheet> {
   String? _portError() {
     final errors = _fieldErrors();
     return errors.where((e) => e.contains('Port')).firstOrNull;
+  }
+}
+
+/// Animated glow around a text field while it has focus.
+class _FocusGlowField extends StatelessWidget {
+  const _FocusGlowField({required this.focusNode, required this.child});
+
+  final FocusNode focusNode;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: focusNode,
+      builder: (context, focused, _) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: focused ? 1 : 0),
+          duration: AppTokens.durationMed,
+          curve: AppTokens.easeOut,
+          builder: (context, t, child) => Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppTokens.radiusInner + 6),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTokens.accent.withValues(alpha: 0.22 * t),
+                  blurRadius: 16 * t,
+                  spreadRadius: 2 * t,
+                ),
+              ],
+            ),
+            child: child,
+          ),
+          child: child,
+        );
+      },
+    );
   }
 }
 
