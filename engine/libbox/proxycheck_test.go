@@ -196,7 +196,10 @@ func handleHTTPConnect(conn net.Conn, username, password string) {
 	}
 	header := string(buf[:headerEnd])
 	lines := strings.Split(header, "\r\n")
-	if len(lines) == 0 || !strings.HasPrefix(lines[0], "CONNECT ") {
+	// Request line is "CONNECT host:port HTTP/1.1"; take the host:port token.
+	// (TrimSpace would leave " HTTP/1.1" in the address and break the dial.)
+	requestFields := strings.Fields(lines[0])
+	if len(requestFields) != 3 || requestFields[0] != "CONNECT" {
 		_, _ = conn.Write([]byte("HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"))
 		return
 	}
@@ -214,7 +217,7 @@ func handleHTTPConnect(conn net.Conn, username, password string) {
 			return
 		}
 	}
-	target := strings.TrimSpace(strings.TrimPrefix(lines[0], "CONNECT "))
+	target := requestFields[1]
 	upstream, err := net.Dial("tcp", target)
 	if err != nil {
 		_, _ = conn.Write([]byte("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n"))
@@ -323,7 +326,9 @@ func TestTCPPingOpenAndClosed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !open.Ok || open.ConnectRTT <= 0 {
+	// Ok alone proves the dial succeeded; ConnectRTT is 0 for sub-millisecond
+	// loopback connects (the field is measured in whole milliseconds).
+	if !open.Ok {
 		t.Fatalf("expected open port to ping ok, got %+v", open)
 	}
 

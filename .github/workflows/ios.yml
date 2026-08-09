@@ -32,7 +32,7 @@ jobs:
         working-directory: engine
         run: |
           go mod tidy
-          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20260209203831-923679eb55af
           $(go env GOPATH)/bin/gomobile init
           $(go env GOPATH)/bin/gomobile bind -target=ios -ldflags="-s -w" \
             -o bin/Libbox.xcframework proxyclient.dev/engine/libbox
