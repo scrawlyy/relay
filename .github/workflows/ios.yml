@@ -118,9 +118,10 @@ jobs:
             -archivePath build/Minimal.xcarchive \
             FLUTTER_TARGET=lib/minimal_main.dart \
             CODE_SIGNING_ALLOWED=NO archive
-          mkdir -p build/PayloadMinimal
-          cp -R build/Minimal.xcarchive/Products/Applications/Relay.app build/PayloadMinimal/
-          (cd build && zip -qry RelayMinimal.ipa PayloadMinimal)
+          rm -rf build/Payload
+          mkdir -p build/Payload
+          cp -R build/Minimal.xcarchive/Products/Applications/Relay.app build/Payload/
+          (cd build && zip -qry RelayMinimal.ipa Payload)
           ls -la build/RelayMinimal.ipa
 
       - name: Upload IPA
