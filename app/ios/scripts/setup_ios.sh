@@ -32,6 +32,13 @@ else
   echo "warning: Flutter.framework not found at $FLUTTER_FRAMEWORK" >&2
 fi
 
+echo "==> Writing Flutter xcconfig files"
+for cfg in Debug Profile Release; do
+  if [ ! -f "app/ios/Flutter/$cfg.xcconfig" ]; then
+    printf '#include "Generated.xcconfig"\n' > "app/ios/Flutter/$cfg.xcconfig"
+  fi
+done
+
 echo "==> Generating Xcode project"
 (cd app/ios && xcodegen generate)
 

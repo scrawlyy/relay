@@ -5,6 +5,10 @@ options:
     iOS: "16.0"
   createIntermediateGroups: true
   groupSortPosition: top
+  configFiles:
+    Debug: Flutter/Debug.xcconfig
+    Profile: Flutter/Profile.xcconfig
+    Release: Flutter/Release.xcconfig
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -29,7 +33,7 @@ targets:
         FRAMEWORK_SEARCH_PATHS:
           - "$(inherited)"
           - "$(PROJECT_DIR)/Flutter"
-          - "$(PROJECT_DIR)/Flutter/Flutter.framework"
+          - "$(PROJECT_DIR)"
     preBuildScripts:
       - name: "Run Script"
         basedOnDependencyAnalysis: false
@@ -41,8 +45,6 @@ targets:
         script: |
           "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" embed_and_thin
     dependencies:
-      - framework: Flutter/Flutter.framework
-        embed: true
       - framework: Libbox.xcframework
         embed: true
   RelayTunnel:
