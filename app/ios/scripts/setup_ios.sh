@@ -5,7 +5,7 @@
 # SDK, and the engine framework built by `make libbox-ios` in engine/.
 set -euo pipefail
 
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../../.."
 
 if [ ! -d engine/bin/Libbox.xcframework ]; then
   echo "error: engine/bin/Libbox.xcframework not found." >&2
