@@ -64,6 +64,16 @@ jobs:
         working-directory: app
         run: flutter build apk --debug
 
+      - name: Dump Libbox Java API
+        if: always()
+        run: |
+          mkdir -p /tmp/aar && unzip -o engine/bin/Libbox.aar classes.jar -d /tmp/aar
+          mkdir -p /tmp/aar/c && unzip -o /tmp/aar/classes.jar -d /tmp/aar/c
+          javap -p -classpath /tmp/aar/c libbox.Libbox libbox.ProxyConfig libbox.ProbeResult libbox.TrafficListener
+          SDK_JAR=$(find "$ANDROID_HOME/platforms" -name android.jar | sort | tail -1)
+          echo "SDK_JAR=$SDK_JAR"
+          javap -classpath "$SDK_JAR" 'android.net.VpnService$Builder'
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

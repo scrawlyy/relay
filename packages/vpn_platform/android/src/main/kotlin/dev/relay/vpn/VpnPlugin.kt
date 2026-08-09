@@ -11,6 +11,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import libbox.Libbox
@@ -105,7 +106,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
                     val host = call.argument<String>("host") ?: ""
                     val port = (call.argument<Number>("port") ?: 0).toInt()
                     val timeout = (call.argument<Number>("timeoutMs") ?: 5000).toInt()
-                    Libbox.TCPPing(host, port, timeout).toMap()
+                    Libbox.tCPPing(host, port, timeout).toMap()
                 }.onSuccess { result.success(it) }
                     .onFailure { result.success(probeFailureMap(it.message)) }
             }
@@ -114,7 +115,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
                     val profile = call.argument<Map<String, Any?>>("profile") ?: emptyMap()
                     val url = call.argument<String>("probeUrl") ?: ""
                     val timeout = (call.argument<Number>("timeoutMs") ?: 10000).toInt()
-                    Libbox.ProxyProbe(profile.toProxyConfig(), url, timeout).toMap()
+                    Libbox.proxyProbe(profile.toProxyConfig(), url, timeout).toMap()
                 }.onSuccess { result.success(it) }
                     .onFailure { result.success(probeFailureMap(it.message)) }
             }
@@ -122,7 +123,7 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
                 runCatching {
                     val url = call.argument<String>("probeUrl") ?: ""
                     val timeout = (call.argument<Number>("timeoutMs") ?: 10000).toInt()
-                    Libbox.TunnelProbe(url, timeout).toMap()
+                    Libbox.tunnelProbe(url, timeout).toMap()
                 }.onSuccess { result.success(it) }
                     .onFailure { result.success(probeFailureMap(it.message)) }
             }
@@ -212,11 +213,6 @@ class VpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistr
 
     companion object {
         private const val REQUEST_PREPARE = 901
-
-        @JvmStatic
-        fun registerWith(registrar: io.flutter.plugin.common.PluginRegistry.Registrar) {
-            // Legacy embedding support.
-        }
     }
 }
 

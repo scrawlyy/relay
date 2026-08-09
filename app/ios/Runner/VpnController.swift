@@ -18,8 +18,8 @@ final class VpnController: NSObject {
     private let statusChannel = "dev.relay/vpn/status"
     private let statsChannel = "dev.relay/vpn/stats"
 
-    private var statusSink: FlutterEventSink?
-    private var statsSink: FlutterEventSink?
+    fileprivate var statusSink: FlutterEventSink?
+    fileprivate var statsSink: FlutterEventSink?
     private var activeManager: NETunnelProviderManager?
     private var statsTimer: Timer?
 
@@ -117,7 +117,7 @@ final class VpnController: NSObject {
             self.activeManager = manager
             do {
                 try manager.connection.startVPNTunnel(
-                    options: ["profile": profile] as [String: Any]
+                    options: ["profile": profile as NSObject]
                 )
                 result(success(true))
             } catch {
@@ -147,12 +147,12 @@ final class VpnController: NSObject {
         }
         let timeout = (args["timeoutMs"] as? NSNumber)?.intValue ?? 5000
         DispatchQueue.global(qos: .userInitiated).async {
-            do {
-                let outcome = try LibboxTCPPing(host, Int32(port), Int32(timeout))
-                result(self.probeMap(outcome))
-            } catch {
-                result(self.probeMap(nil, error: error.localizedDescription))
+            var error: NSError?
+            guard let outcome = LibboxTCPPing(host, Int32(port), Int32(timeout), &error) else {
+                result(self.probeMap(nil, error: error?.localizedDescription ?? "ping failed"))
+                return
             }
+            result(self.probeMap(outcome))
         }
     }
 
@@ -167,17 +167,17 @@ final class VpnController: NSObject {
 
         DispatchQueue.global(qos: .userInitiated).async {
             let config = LibboxProxyConfig()
-            config.setType(profile["protocol"] as? String ?? "socks5")
-            config.setServer(profile["host"] as? String ?? "")
-            config.setPort(Int32((profile["port"] as? NSNumber)?.intValue ?? 0))
-            config.setUsername(profile["username"] as? String ?? "")
-            config.setPassword(profile["password"] as? String ?? "")
-            do {
-                let outcome = try LibboxProxyProbe(config, url, Int32(timeout))
-                result(self.probeMap(outcome))
-            } catch {
-                result(self.probeMap(nil, error: error.localizedDescription))
+            config.type = profile["protocol"] as? String ?? "socks5"
+            config.server = profile["host"] as? String ?? ""
+            config.port = Int32((profile["port"] as? NSNumber)?.intValue ?? 0)
+            config.username = profile["username"] as? String ?? ""
+            config.password = profile["password"] as? String ?? ""
+            var error: NSError?
+            guard let outcome = LibboxProxyProbe(config, url, Int32(timeout), &error) else {
+                result(self.probeMap(nil, error: error?.localizedDescription ?? "probe failed"))
+                return
             }
+            result(self.probeMap(outcome))
         }
     }
 
@@ -221,7 +221,7 @@ final class VpnController: NSObject {
             completion(nil)
             return
         }
-        session.sendProviderMessage(Data(command.utf8)) { response in
+        try? session.sendProviderMessage(Data(command.utf8)) { response in
             completion(response)
         }
     }
@@ -238,7 +238,7 @@ final class VpnController: NSObject {
         }
     }
 
-    private func statusMap() -> [String: Any?] {
+    fileprivate func statusMap() -> [String: Any?] {
         guard let manager = activeManager else {
             return ["state": "disconnected", "profileId": nil, "profileName": nil, "latencyMs": nil]
         }
@@ -297,11 +297,11 @@ final class VpnController: NSObject {
     private func probeMap(_ outcome: LibboxProbeResult?, error: String? = nil) -> [String: Any?] {
         if let outcome {
             return [
-                "ok": outcome.ok(),
-                "connectRttMs": outcome.connectRTT(),
-                "totalRttMs": outcome.totalRTT(),
-                "httpStatus": outcome.httpStatus(),
-                "error": outcome.error(),
+                "ok": outcome.ok,
+                "connectRttMs": outcome.connectRTT,
+                "totalRttMs": outcome.totalRTT,
+                "httpStatus": outcome.httpStatus,
+                "error": outcome.error,
             ]
         }
         return ["ok": false, "connectRttMs": 0, "totalRttMs": 0, "httpStatus": 0, "error": error]

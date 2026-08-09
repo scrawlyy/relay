@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -86,31 +87,30 @@ class VpnTunnelService : VpnService() {
                 .addRoute("0.0.0.0", 0)
                 .addAddress("fdfe:dcba:9876::1", 128)
                 .addRoute("::", 0)
-                .setBlockingMode(true)
                 .setUnderlyingNetworks(null)
 
             val fd = builder.establish()
                 ?: throw IllegalStateException("VpnService.Builder.establish() returned null")
             tunPfd = fd
 
-            Libbox.Setup(filesDir.absolutePath, filesDir.absolutePath, cacheDir.absolutePath)
-            Libbox.SetTrafficListener(object : TrafficListener {
+            Libbox.setup(filesDir.absolutePath, filesDir.absolutePath, cacheDir.absolutePath)
+            Libbox.setTrafficListener(object : TrafficListener {
                 override fun onTraffic(uplink: Long, downlink: Long) {
                     EngineBridge.onTraffic(uplink, downlink)
                 }
             })
 
-            val controllerPort = Libbox.AvailablePort(10000)
-            val secret = Libbox.RandomSecret(16)
+            val controllerPort = Libbox.availablePort(10000)
+            val secret = Libbox.randomSecret(16)
             val proxy = ProxyConfig()
             proxy.type = profile.optString("protocol", "socks5")
             proxy.server = profile.optString("host", "")
             proxy.port = profile.optInt("port", 0)
             proxy.username = profile.optString("username", "")
             proxy.password = profile.optString("password", "")
-            val configJSON = Libbox.BuildConfig(proxy, controllerPort, secret, MTU)
+            val configJSON = Libbox.buildConfig(proxy, controllerPort, secret, MTU)
 
-            Libbox.StartWithConfig(configJSON, fd.fd)
+            Libbox.startWithConfig(configJSON, fd.fd)
             EngineBridge.setStatus(EngineBridge.State.Connected, profileId, profileName)
         } catch (e: Exception) {
             EngineBridge.setStatus(EngineBridge.State.Error, profileId, profileName)
@@ -123,7 +123,7 @@ class VpnTunnelService : VpnService() {
 
     private fun stopEngine() {
         try {
-            Libbox.Stop()
+            Libbox.stop()
         } catch (_: Exception) {
         }
         EngineBridge.setStatus(EngineBridge.State.Disconnected, null, null)
@@ -139,7 +139,7 @@ class VpnTunnelService : VpnService() {
     override fun onDestroy() {
         executor.execute {
             try {
-                Libbox.Stop()
+                Libbox.stop()
             } catch (_: Exception) {
             }
             EngineBridge.setStatus(EngineBridge.State.Disconnected, null, null)
