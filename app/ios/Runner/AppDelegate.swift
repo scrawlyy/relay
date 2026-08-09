@@ -10,7 +10,7 @@ import UIKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        GeneratedPluginRegistrant.register(withRegistry: self)
+        GeneratedPluginRegistrant.register(with: self)
         if let controller = window?.rootViewController as? FlutterViewController {
             hapticPlugin = HapticEnginePlugin(binaryMessenger: controller.binaryMessenger)
             VpnController.shared.registerChannels(with: controller)
