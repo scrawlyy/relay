@@ -42,6 +42,20 @@ done
 echo "==> Generating Xcode project"
 (cd app/ios && xcodegen generate)
 
+echo "==> Creating Runner.xcworkspace for Flutter tooling"
+mkdir -p app/ios/Runner.xcworkspace
+if [ ! -f app/ios/Runner.xcworkspace/contents.xcworkspacedata ]; then
+  cat > app/ios/Runner.xcworkspace/contents.xcworkspacedata <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:Runner.xcodeproj">
+   </FileRef>
+</Workspace>
+EOF
+fi
+
 echo "==> Configuring Flutter iOS build"
 (cd app && flutter build ios --config-only --no-codesign)
 
