@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/profile_repository.dart';
+import 'profiles_providers.dart';
 
 final onboardedProvider =
     NotifierProvider<OnboardedController, bool>(OnboardedController.new);

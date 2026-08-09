@@ -48,8 +48,7 @@ class ThroughputController extends Notifier<ThroughputState> {
   @override
   ThroughputState build() {
     ref.listen(vpnStatsProvider, (previous, next) {
-      next.whenData(_onFrame);
-      next.whenError((_, __) {});
+      next.whenOrNull(data: _onFrame);
     });
     ref.listen(connectionProvider, (previous, next) {
       if (next.phase != ConnectionPhase.connected) {

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/haptics/haptics.dart';
 import '../data/profile_repository.dart';
+import 'profiles_providers.dart';
 
 class AppSettings {
   const AppSettings({

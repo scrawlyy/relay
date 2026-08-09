@@ -19,9 +19,10 @@ class TotalsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uptime = connectedSince == null
+    final since = connectedSince;
+    final uptime = since == null
         ? null
-        : formatUptime(DateTime.now().difference(connectedSince));
+        : formatUptime(DateTime.now().difference(since));
 
     return SectionCard(
       padding: const EdgeInsets.symmetric(vertical: 18),

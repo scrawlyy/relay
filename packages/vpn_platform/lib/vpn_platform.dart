@@ -13,6 +13,9 @@ export 'src/vpn_types.dart';
 class VpnPlatform {
   VpnPlatform._();
 
+  /// Shared singleton facade.
+  static final VpnPlatform instance = VpnPlatform._();
+
   static const MethodChannel _control = MethodChannel('dev.relay/vpn');
   static const EventChannel _statusEvents = EventChannel('dev.relay/vpn/status');
   static const EventChannel _statsEvents = EventChannel('dev.relay/vpn/stats');

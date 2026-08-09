@@ -65,8 +65,7 @@ class ConnectionController extends Notifier<ConnectionState> {
       _connectTimer?.cancel();
     });
     ref.listen(vpnStatusProvider, (previous, next) {
-      next.whenData(_onNativeStatus);
-      next.whenError((_, __) {});
+      next.whenOrNull(data: _onNativeStatus);
     });
     return state ?? ConnectionState.idle;
   }
