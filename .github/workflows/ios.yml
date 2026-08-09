@@ -109,9 +109,30 @@ jobs:
           (cd build && zip -qry Relay.ipa Payload)
           ls -la build/Relay.ipa
 
+      - name: Build minimal diagnostic IPA (pure Flutter, no plugins)
+        working-directory: app/ios
+        run: |
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Minimal.xcarchive \
+            FLUTTER_TARGET=lib/minimal_main.dart \
+            CODE_SIGNING_ALLOWED=NO archive
+          mkdir -p build/PayloadMinimal
+          cp -R build/Minimal.xcarchive/Products/Applications/Relay.app build/PayloadMinimal/
+          (cd build && zip -qry RelayMinimal.ipa PayloadMinimal)
+          ls -la build/RelayMinimal.ipa
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: relay-unsigned-ipa
           path: app/ios/build/Relay.ipa
+          if-no-files-found: error
+
+      - name: Upload minimal diagnostic IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: relay-minimal-ipa
+          path: app/ios/build/RelayMinimal.ipa
           if-no-files-found: error
