@@ -82,24 +82,70 @@ final class VpnController: NSObject {
     // MARK: - Connect / disconnect
 
     private func connect(profile: [String: Any], result: @escaping FlutterResult) {
-        let protocolConfig = NETunnelProviderProtocol()
-        protocolConfig.providerBundleIdentifier = "dev.relay.app.tunnel"
-        protocolConfig.serverAddress = profile["host"] as? String ?? ""
-        protocolConfig.disconnectOnSleep = false
-        protocolConfig.providerConfiguration = ["profile": profile]
+        // providerConfiguration must be a pure property-list (String/Number/
+        // Bool/Data/Array/Dictionary). Optional fields (username/password)
+        // arrive from Flutter as NSNull when unset, which is NOT a valid
+        // plist type. Leaving NSNull in here makes saveToPreferences fail
+        // its validation silently *before* the system ever shows the "Add
+        // VPN Configurations" consent prompt, which is why no configuration
+        // gets created and startVPNTunnel subsequently fails.
+        let sanitizedProfile = plistSanitized(profile) as? [String: Any] ?? [:]
 
-        let manager = NETunnelProviderManager()
-        manager.localizedDescription = "Relay"
-        manager.protocolConfiguration = protocolConfig
-        manager.isEnabled = true
-
-        manager.saveToPreferences { [weak self] error in
+        NETunnelProviderManager.loadAllFromPreferences { [weak self] managers, error in
             guard let self else { return }
             if let error {
-                result(success(false, "save_failed", error.localizedDescription))
+                result(self.success(false, "load_failed", error.localizedDescription))
                 return
             }
-            self.loadManagerAndStart(profile: profile, result: result)
+
+            // Reuse an existing configuration instead of creating a brand
+            // new NETunnelProviderManager on every connect — repeatedly
+            // creating fresh instances leads to duplicate/orphaned VPN
+            // configurations and flaky saves.
+            let manager = managers?.first ?? NETunnelProviderManager()
+
+            let protocolConfig = NETunnelProviderProtocol()
+            protocolConfig.providerBundleIdentifier = "dev.relay.app.tunnel"
+            protocolConfig.serverAddress = sanitizedProfile["host"] as? String ?? ""
+            protocolConfig.disconnectOnSleep = false
+            protocolConfig.providerConfiguration = ["profile": sanitizedProfile]
+
+            manager.localizedDescription = "Relay"
+            manager.protocolConfiguration = protocolConfig
+            manager.isEnabled = true
+
+            manager.saveToPreferences { error in
+                if let error {
+                    result(self.success(false, "save_failed", error.localizedDescription))
+                    return
+                }
+                self.loadManagerAndStart(profile: sanitizedProfile, result: result)
+            }
+        }
+    }
+
+    /// Recursively strips NSNull (and any other non-plist-safe values) out
+    /// of a dictionary/array so it's safe to assign to
+    /// NETunnelProviderProtocol.providerConfiguration, which requires a pure
+    /// property list.
+    private func plistSanitized(_ value: Any) -> Any? {
+        switch value {
+        case is NSNull:
+            return nil
+        case let dict as [String: Any]:
+            var out: [String: Any] = [:]
+            for (key, val) in dict {
+                if let sanitized = plistSanitized(val) {
+                    out[key] = sanitized
+                }
+            }
+            return out
+        case let array as [Any]:
+            return array.compactMap { plistSanitized($0) }
+        case is String, is NSNumber, is Data:
+            return value
+        default:
+            return nil
         }
     }
 

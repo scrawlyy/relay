@@ -40,7 +40,12 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(AppTokens.space),
+          padding: EdgeInsets.fromLTRB(
+            AppTokens.space,
+            AppTokens.space,
+            AppTokens.space,
+            AppTokens.dockClearance(context),
+          ),
           children: [
             const Text(
               'Diagnostics',

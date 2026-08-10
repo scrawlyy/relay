@@ -39,4 +39,15 @@ abstract final class AppTokens {
   static const easeEmphasized = Curves.easeInOutCubicEmphasized;
 
   static const fontFamily = 'Inter';
+
+  // Floating dock
+  static const dockHeight = 66.0;
+  static const dockGap = 20.0;
+
+  /// Bottom padding scrollable screens need so their last item clears the
+  /// floating glass dock (which overlays content, it isn't reserved space).
+  static double dockClearance(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return (bottomInset < 14 ? 14 : bottomInset) + dockHeight + dockGap;
+  }
 }

@@ -38,7 +38,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(AppTokens.space),
+          padding: EdgeInsets.fromLTRB(
+            AppTokens.space,
+            AppTokens.space,
+            AppTokens.space,
+            AppTokens.dockClearance(context),
+          ),
           children: [
             const Text(
               'Settings',

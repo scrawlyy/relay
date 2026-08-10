@@ -17,25 +17,42 @@ class RootShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // The dock floats as an overlay (Stack), not a bottomNavigationBar.
+    // bottomNavigationBar reserves its own dedicated strip of screen, so
+    // there's nothing behind the frosted glass for it to actually blur, and
+    // scrollable content stops dead above it instead of flowing underneath.
+    // Screens add AppTokens.dockClearance() bottom padding so their content
+    // still clears the dock visually.
     return Scaffold(
-      body: TweenAnimationBuilder<double>(
-        key: ValueKey(navigationShell.currentIndex),
-        tween: Tween(begin: 0, end: 1),
-        duration: AppTokens.durationMed,
-        curve: AppTokens.easeEmphasized,
-        builder: (context, t, child) =>
-            Opacity(opacity: 0.25 + 0.75 * t, child: child),
-        child: navigationShell,
-      ),
-      bottomNavigationBar: _NavBar(
-        currentIndex: navigationShell.currentIndex,
-        onSelect: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-          AppHaptics.select();
-        },
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              key: ValueKey(navigationShell.currentIndex),
+              tween: Tween(begin: 0, end: 1),
+              duration: AppTokens.durationMed,
+              curve: AppTokens.easeEmphasized,
+              builder: (context, t, child) =>
+                  Opacity(opacity: 0.25 + 0.75 * t, child: child),
+              child: navigationShell,
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _NavBar(
+              currentIndex: navigationShell.currentIndex,
+              onSelect: (index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+                AppHaptics.select();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -63,7 +80,7 @@ class _NavBar extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
           child: Container(
-            height: 66,
+            height: AppTokens.dockHeight,
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: AppTokens.glassFill,
@@ -77,19 +94,50 @@ class _NavBar extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                for (var i = 0; i < _tabs.length; i++)
-                  Expanded(
-                    child: _TabButton(
-                      icon: _tabs[i].icon,
-                      activeIcon: _tabs[i].activeIcon,
-                      label: _tabs[i].label,
-                      selected: currentIndex == i,
-                      onTap: () => onSelect(i),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final slotWidth = constraints.maxWidth / _tabs.length;
+                return Stack(
+                  children: [
+                    // Sliding pill: one physical highlight that glides
+                    // between tabs instead of each tab toggling its own
+                    // background. This is what actually reads as "liquid"
+                    // rather than a flat state swap.
+                    AnimatedPositioned(
+                      duration: AppTokens.durationMed,
+                      curve: AppTokens.easeEmphasized,
+                      left: slotWidth * currentIndex,
+                      top: 0,
+                      bottom: 0,
+                      width: slotWidth,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppTokens.surfaceInteractive,
+                            borderRadius:
+                                BorderRadius.circular(AppTokens.radiusPill),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                    Row(
+                      children: [
+                        for (var i = 0; i < _tabs.length; i++)
+                          Expanded(
+                            child: _TabButton(
+                              icon: _tabs[i].icon,
+                              activeIcon: _tabs[i].activeIcon,
+                              label: _tabs[i].label,
+                              selected: currentIndex == i,
+                              onTap: () => onSelect(i),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -118,13 +166,7 @@ class _TabButton extends StatelessWidget {
     return PressScale(
       onTap: onTap,
       pressedScale: 0.86,
-      child: AnimatedContainer(
-        duration: AppTokens.durationMed,
-        curve: AppTokens.easeEmphasized,
-        decoration: BoxDecoration(
-          color: selected ? AppTokens.surfaceInteractive : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppTokens.radiusPill),
-        ),
+      child: SizedBox.expand(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

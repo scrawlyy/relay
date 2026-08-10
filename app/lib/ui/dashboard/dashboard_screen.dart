@@ -76,6 +76,9 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: AppTokens.dockClearance(context)),
+            ),
           ],
         ),
       ),
